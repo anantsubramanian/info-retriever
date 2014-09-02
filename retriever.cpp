@@ -22,7 +22,7 @@ string to_lower(string param)
 {
 	for(int i = 0; i < param.size(); i++)
 		if(param[i] >= 65 && param[i] < 91)
-			param[i] += 22;
+			param[i] += 32;
 	return param;
 }
 
@@ -34,6 +34,9 @@ bool weightcomp(pair<int, double> a, pair<int, double> b)
 int main()
 {
 	ios_base::sync_with_stdio(false);
+	int numresults = 25;
+	cout<<"Required no. of results per query?: ";
+	cin>>numresults;
 	ifstream stopwordsfile("stopwords.txt");
 	string stopword;
 	while(!stopwordsfile.eof())
@@ -93,7 +96,8 @@ int main()
 	}
 	else
 	{
-		cout<<"Error locating directory. Does it exist?\n";		
+		cout<<"Error locating directory. Does it exist?\n";
+		return 0;
 	}
 	string query;
 	vector<string> querylist;
@@ -101,7 +105,10 @@ int main()
 	while(true)
 	{
 		cout<<"Please enter your query (or Exit to quit): ";
-		getline(cin, query);
+		do
+		{
+			getline(cin, query);
+		} while(query.size() == 0);
 		regex_iterator<string::iterator> rit(query.begin(), query.end(), wordsnums);
 		regex_iterator<string::iterator> rend;
 		string word;
@@ -131,13 +138,13 @@ int main()
 			{
 				if ((tfidfs.find(querylist[j]) != tfidfs.end()) &&  (tfidfs[querylist[j]].find(i) != tfidfs[querylist[j]].end()))
 				{
-					weight += 100 * tfidfs[querylist[j]][i] * ((double)1 / tfidfs[querylist[j]].size());
+					weight += 100 * tfidfs[querylist[j]][i] * ((double)1 / (tfidfs[querylist[j]].size() * maxwordf[i]));
 				}
 			}
 			doclist.push_back(pair<int, double>(i, weight));
 		}
 		sort(doclist.begin(), doclist.end(), weightcomp);
-		int limit = min(25, (int)doclist.size());
+		int limit = max(0, min(25, (int)doclist.size()));
 		for(int num = 1; num <= limit; num++)
 			cout<<num<<". "<<docid[doclist[num-1].first]<<" TFxIDF = "<<doclist[num-1].second<<"\n";
 	}
