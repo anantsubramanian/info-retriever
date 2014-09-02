@@ -1,4 +1,4 @@
-# Program to build an in-memory positional postings list for a collection of documents
+# Program to build an in-memory positional postings list for a list of documents
 # and allow queries to search through the documents using TF x IDF as a weight
 # measure for ranking.
 
@@ -158,11 +158,11 @@ while True:
 			weight = 0
 			for word in querylist:
 				if word in tfidfs and i in tfidfs[word]:
-					weight += tfidfs[word][i]*(float(1) / tfidfs[word].__len__())
+					weight += tfidfs[word][i]*(float(1) / (tfidfs[word].__len__() * maxwordf[i]))
 			# Total weight for document = (sum of weights for query terms for document) / (max frequency of any word in document)
 			doclist.append((documentid[i], weight))
-			doclist.sort(key=operator.itemgetter(1), reverse=True)
-			num = 1
+		doclist.sort(key=operator.itemgetter(1), reverse=True)
+		num = 1
 		for i in doclist:
 		 	if num > numdocs:
 		 		break
