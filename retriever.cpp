@@ -16,6 +16,7 @@ vector<string> docid;
 tr1::unordered_map<string, hashivi> wordindex;
 tr1::unordered_map<string, hashii> tfidfs;
 hashii maxwordf;
+tr1::unordered_map<string, bool> stopwords;
 
 string to_lower(string param)
 {
@@ -33,6 +34,14 @@ bool weightcomp(pair<int, double> a, pair<int, double> b)
 int main()
 {
 	ios_base::sync_with_stdio(false);
+	ifstream stopwordsfile("stopwords.txt");
+	string stopword;
+	while(!stopwordsfile.eof())
+	{
+		stopwordsfile>>stopword;
+		stopwords[stopword] = true;
+	}
+	stopwordsfile.close();
 	int curid = 0;
 	regex wordsnums("[a-zA-Z]+|[0-9]+");
 	DIR *dir;
@@ -57,6 +66,8 @@ int main()
 				{
 					string word = to_lower(it->str());
 					if (word.size() == 0)
+						continue;
+					if (stopwords.find(word) != stopwords.end())
 						continue;
 					if (wordindex.find(word) == wordindex.end())
 						wordindex[word] = hashivi();
@@ -95,15 +106,23 @@ int main()
 		regex_iterator<string::iterator> rend;
 		string word;
 		querylist.clear();
+		doclist.clear();
 		while(rit != rend)
 		{
 			word = to_lower(rit->str());
+			rit++;
 			if(word == "exit")
 				return 0;
 			if(word.size() == 0)
 				continue;
+			if(stopwords.find(word) != stopwords.end())
+				continue;
 			querylist.push_back(word);
-			rit++;
+		}
+		if(querylist.size() == 0)
+		{
+			cout<<"Query appears to be too generic. Please modify and retry.\n";
+			continue;
 		}
 		for(int i = 0; i < curid; i++)
 		{
@@ -112,7 +131,7 @@ int main()
 			{
 				if ((tfidfs.find(querylist[j]) != tfidfs.end()) &&  (tfidfs[querylist[j]].find(i) != tfidfs[querylist[j]].end()))
 				{
-					weight += tfidfs[querylist[j]][i] * ((double)1 / (tfidfs[querylist[j]].size() * maxwordf[i]));
+					weight += 100 * tfidfs[querylist[j]][i] * ((double)1 / tfidfs[querylist[j]].size());
 				}
 			}
 			doclist.push_back(pair<int, double>(i, weight));
